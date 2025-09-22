@@ -1,19 +1,21 @@
-from flask import Flask
+from flask import Flask, render_template
+from flask_bootstrap import Bootstrap
 
 app = Flask(__name__)
+Bootstrap(app)
 
 
 @app.route('/')
 def welcome():
-    return "Welcome to Emily's Dog Costumes! See my <a href=\"/services\">"\
-        "services</a> and current line of <a href=\"/costumes\">costumes</a>"
-
+    # Emily made an html file for this route she wants to show
+    # for now she put this placeholder
+    return render_template("index.html")
 
 @app.route('/services')
 def services():
-    return "I offer custom made costumes for your precious canine companion, "\
-        "and a free in-home consultation, to get the measurements."
-
+    # Emily made an html file for this route she wants to show
+    # for now she put this placeholder
+    return render_template("services.html")
 
 @app.route('/costumes')
 def costumes():
@@ -45,4 +47,7 @@ def costumes():
         },
     ]
 
-    return "Check out my costumes!"
+    # Emily wants to list her costumes above (listed above)
+    # for now she put this placeholder
+    return render_template("costumes.html", costumes_list=costumes_list)
+

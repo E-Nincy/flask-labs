@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    {% block head %}
+        <title>{% block title %}Emily's Dog Costumes{% endblock %}</title>
+        <meta name="description" content="Emily's Dog Costumes website">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    {% endblock %}
+</head>
+<body>
+    {% block body %}
+        <header>
+            {% block header %}
+            <div id="logo">
+                <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+                <h1>Emily's Dog Costumes</h1>
+            </div>
+            <nav>
+                {% block navbar %}
+                <ul>
+                    <li><a href="{{ url_for('welcome') }}">Home</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                    <li><a href="{{ url_for('costumes') }}">Costumes</a></li>
+                </ul>
+                {% endblock %}
+            </nav>
+            {% endblock %}
+        </header>
+
+        <main>
+            {% block content %}
+                {% block page_content %}{% endblock %}
+            {% endblock %}
+        </main>
+
+        <footer>
+            {% block footer %}
+            <p>&copy; All rights reserved to Emily, Dog Costume Extraordinaire</p>
+            <p>Contact: <a href="mailto:emily@example.com">Emily, Dog Costumer</a></p>
+            {% endblock %}
+        </footer>
+    {% endblock %}
+</body>
+</html>
+

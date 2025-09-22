@@ -1,31 +1,16 @@
-<head>
-    <title>Emily's Dog Costumes - My Costumes</title>
-    <meta name="description" content="Emily's Dog Costumes">
-    <link rel="stylesheet" href="static/style.css">
-</head>
+{% extends "base.html" %}
 
-<body>
-    <header>
-        <div id="logo"><img src="static/logo.png">
-            <h1>Emily's Dog Costumes</h1>
-        </div>
-        <nav>
-            <ul>
-                <li><a href="/">Home</a>
-                <li><a href="/services">Services</a>
-                <li><a href="/costumes">Costumes</a>
-            </ul>
-        </nav>
-    </header>
-    <div>
+{% block title %}Costumes - Emily's Dog Costumes{% endblock %}
+
+{% block page_content %}
+<h2>Our Dog Costumes</h2>
+<div>
+    {% for costume in costumes_list %}
         <div class="costume">
-            <h2>Skeleton</h2>
-            <img class="costume" src='/static/skeleton.jpg'>
-            <p>This style is great if you are feeling something extra spooky for your pooch.</p>
+            <h3>{{ costume.header }}</h3>
+            <img class="costume" src="{{ costume.image }}" alt="{{ costume.header }}">
+            <p>{{ costume.body }}</p>
         </div>
-    </div>
-    <footer>
-        <p>&copy; All rights reserved to Emily, Dog Costume Extraordinaire</p>
-        <p>Contact: <a href="mailto:emily@example.com">Emily, Dog Costumer</a></p>
-    </footer>
-</body>
+    {% endfor %}
+</div>
+{% endblock %}

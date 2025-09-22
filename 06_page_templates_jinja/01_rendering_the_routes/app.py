@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, render_template
 
 app = Flask(__name__)
 
@@ -7,17 +7,13 @@ app = Flask(__name__)
 def welcome():
     # Emily made an html file for this route she wants to show
     # for now she put this placeholder
-    return "Welcome to Emily's Dog Costumes! See my <a href=\"/services\">"\
-        "services</a> and current line of <a href=\"/costumes\">costumes</a>"
-
+    return render_template("index.html")
 
 @app.route('/services')
 def services():
     # Emily made an html file for this route she wants to show
     # for now she put this placeholder
-    return "I offer custom made costumes for your precious canine companion, "\
-        "and a free in-home consultation, to get the measurements."
-
+    return render_template("services.html")
 
 @app.route('/costumes')
 def costumes():
@@ -51,4 +47,4 @@ def costumes():
 
     # Emily wants to list her costumes above (listed above)
     # for now she put this placeholder
-    return f"Check out my costumes!"
+    return render_template("costumes.html", costumes_list=costumes_list)
