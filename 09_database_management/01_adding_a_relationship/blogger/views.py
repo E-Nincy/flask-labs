@@ -27,7 +27,7 @@ def add_post():
         blogpost = AddPostForm(request.form)
         us = User.query.filter_by(username=session['current_user']).first()
         if request.method == 'POST':
-            bp = Post(blogpost.title.data, blogpost.description.data, us.uid)
+            bp = Post(blogpost.title.data, blogpost.description.data, us)
             db.session.add(bp)
             db.session.commit()
             return redirect(url_for('show_posts'))
@@ -36,7 +36,7 @@ def add_post():
     return redirect(url_for('index'))
 
 
-@app.route('/delete/<pid>/<post_owner>', methods=('GET', 'POST'))
+@app.route('/delete/<int:pid>/<post_owner>', methods=('GET', 'POST'))
 def delete_post(pid, post_owner):
     if session['current_user'] == post_owner:
         me = Post.query.get(pid)
@@ -65,30 +65,50 @@ def update_post(pid, post_owner):
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
-    signupform = SignUpForm(request.form)
-    if request.method == 'POST':
-        reg = User(signupform.firstname.data, signupform.lastname.data,\
-         signupform.username.data, signupform.password.data,\
-         signupform.email.data)
-        db.session.add(reg)
+    form = SignUpForm()
+    if form.validate_on_submit():
+        existing_user = User.query.filter(
+            (User.username == form.username.data) | (User.email == form.email.data)
+        ).first()
+        if existing_user:
+            flash('Username or Email already exists. Please choose another.')
+            return redirect(url_for('signup'))
+
+        user = User(
+            firstname=form.firstname.data,
+            lastname=form.lastname.data,
+            username=form.username.data,
+            password=form.password.data,
+            email=form.email.data
+        )
+        db.session.add(user)
         db.session.commit()
-        return redirect(url_for('index'))
-    return render_template('signup.html', signupform=signupform)
+        flash('Registration successful! Please sign in.')
+        return redirect(url_for('signin'))
+    return render_template('signup.html', signupform=form)
+
 
 
 @app.route('/signin', methods=['GET', 'POST'])
 def signin():
-    signinform = SignInForm()
-    if request.method == 'POST':
-        em = signinform.email.data
-        log = User.query.filter_by(email=em).first()
-        if log.password == signinform.password.data:
-            current_user = log.username
-            session['current_user'] = current_user
-            session['user_available'] = True
-            return redirect(url_for('show_posts'))
-    return render_template('signin.html', signinform=signinform)
+    form = SignInForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
 
+        if user is None:
+            flash('Email not found. Please sign up first.')
+            return redirect(url_for('signin'))
+
+        if user.password != form.password.data:
+            flash('Incorrect password.')
+            return redirect(url_for('signin'))
+
+        session['current_user'] = user.username
+        session['user_available'] = True
+        flash('Signed in successfully!')
+        return redirect(url_for('show_posts'))
+
+    return render_template('signin.html', signinform=form)
 
 @app.route('/about_user')
 def about_user():

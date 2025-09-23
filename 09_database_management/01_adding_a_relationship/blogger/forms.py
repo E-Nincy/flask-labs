@@ -19,6 +19,16 @@ class SignUpForm(FlaskForm):
     email = EmailField('Email', validators= [DataRequired(), Email()])
     submit = SubmitField('Sign Up')
 
+    def validate_username(self, username):
+        from .models import User
+        if User.query.filter_by(username=username.data).first():
+            raise ValidationError('Username already exists.')
+
+    def validate_email(self, email):
+        from .models import User
+        if User.query.filter_by(email=email.data).first():
+            raise ValidationError('Email already exists.')
+
 
 class SignInForm(FlaskForm):
     email = EmailField('Email', validators = [DataRequired(), Email()])
