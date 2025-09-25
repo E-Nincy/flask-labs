@@ -1,59 +1,37 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Posts</title>
 
-    <title>Posts</title>
-
-    <link href="../static/bootstrap/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="../static/bootstrap/css/bootstrap-theme.min.css">
-    <script src="../static/bootstrap/js/bootstrap.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
-
-    <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
-    <style type="text/css">
-      #us{
-        float: right;
-        margin-right: 20px;
-        margin-top: 10px;
-      }
-      #us h3{
-        margin: 0 0 0 0;
-      }
-      .ps{
-        width: 60%;
-        margin-top: 20px;
-        margin-left: 20%
-      }
-      #icon{
-        float: right;
-        margin-top: -15px;
-      }
-      #signout{
-        width: 100px;
-        height: 20px;
-      }
-      #signout a{
-        padding: 2px 0px 2px 20px;
-      }
-    </style>
-  </head>
+  <link href="{{ url_for('static', filename='bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap/css/bootstrap-theme.min.css') }}">
+  <script src="{{ url_for('static', filename='bootstrap/js/bootstrap.min.js') }}"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
 <body>
 <div id="us">
-<ul class="nav nav-pills">
-  <li><h3> {{session['current_user']}} &nbsp</h3></li>
-  <li role="presentation" class="active" id="signout"><a href="/logout">Sign Out</a></li>
- </ul>
+  <ul class="nav nav-pills">
+    <li><h3>{{ session['current_user'] }} &nbsp;</h3></li>
+    <li role="presentation"><a href="{{ url_for('auth.signup') }}">Sign Out</a></li>
+  </ul>
 </div>
+
 <div>
-<ul class="nav nav-tabs">
-  <li role="presentation" class="active"><a href="">Posts</a></li>
-  <li role="presentation"><a href="/add">Add Posts</a></li>
-  <li role="presentation"><a href="/about_user">About</a></li>
-</ul>
+  <ul class="nav nav-tabs">
+    <li role="presentation" class="{% if request.endpoint == 'blog.show_posts' %}active{% endif %}">
+      <a href="{{ url_for('blog.show_posts') }}">Posts</a>
+    </li>
+    <li role="presentation" class="{% if request.endpoint == 'blog.add_post' %}active{% endif %}">
+      <a href="{{ url_for('blog.add_post') }}">Add Posts</a>
+    </li>
+    <li role="presentation"><a href="{{ url_for('main.index') }}">Home</a></li>
+  </ul>
 </div>
+
 {% with messages = get_flashed_messages() %}
   {% if messages %}
     {% for message in messages %}
@@ -61,25 +39,27 @@
     {% endfor %}
   {% endif %}
 {% endwith %}
-<div class="ps">
-{% for i in posts %}
-<div class="panel panel-info">
-  <div class="panel-heading">
-    <div><h3 class="panel-title">{{i.title}}</h3></div>
-    <div id="icon">
-    {% for j in user %}
-      {% if j.uid == i.puid %}
-     BY: {{j.username}}
-      <a class="glyphicon glyphicon-pencil" href="/update/{{ i.pid }}/{{j.username}}"></a>&nbsp &nbsp
-      <a class="glyphicon glyphicon-trash" id="del" href="/delete/{{ i.pid }}/{{j.username}}"></a>
 
+<div class="ps">
+  {% for i in posts %}
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <div><h3 class="panel-title">{{ i.title }}</h3></div>
+      <div id="icon">
+        {% for j in user %}
+          {% if j.uid == i.puid %}
+            BY: {{ j.username }}
+            <a class="glyphicon glyphicon-pencil" href="{{ url_for('blog.update_post', pid=i.pid, post_owner=j.username) }}"></a>
+            &nbsp;&nbsp;
+            <a class="glyphicon glyphicon-trash" href="{{ url_for('blog.delete_post', pid=i.pid, post_owner=j.username) }}"></a>
+          {% endif %}
+        {% endfor %}
+      </div>
     </div>
+    <div class="panel-body"><p>{{ i.description }}</p></div>
   </div>
-  <div class="panel-body"><p>{{i.description}}</p> </div>
-</div>
-{% endif %}
-{% endfor %}
-{% endfor %}
+  {% endfor %}
 </div>
 </body>
 </html>
+

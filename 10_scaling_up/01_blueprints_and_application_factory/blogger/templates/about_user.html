@@ -59,8 +59,8 @@
 </div>
 <div>
 <ul class="nav nav-tabs">
-  <li role="presentation"><a href="/posts">Posts</a></li>
-	<li role="presentation"><a href="/add">Add Posts</a></li>
+  <li role="presentation"><a href="{{ url_for('blog.show_posts') }}">Posts</a></li>
+  <li role="presentation"><a href="{{ url_for('blog.add_post') }}">Add Posts</a></li>
   <li role="presentation" class="active"><a href="">About</a></li>
 </ul>
 </div>
