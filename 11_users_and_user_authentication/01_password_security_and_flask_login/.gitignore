@@ -3,3 +3,7 @@
 *.db
 blogger/_pycache_
 env/
+venv/
+__pycache__/
+instance/
+.idea/

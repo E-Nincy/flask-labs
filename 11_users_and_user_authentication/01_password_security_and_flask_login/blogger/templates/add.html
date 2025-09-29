@@ -58,22 +58,23 @@
 <ul class="nav nav-tabs">
   <li role="presentation" ><a href="/posts">Posts</a></li>
     <li role="presentation" class="active"><a href="">Add Posts</a></li>
-  <li role="presentation"><a href="/about_user">About</a></li>
+  <li role="presentation"><a href="/about_user/{{ current_user.uid }}">About</a></li>
 </ul>
 </div>
 <div >
-  <form action="" method="POST">
-  <table align="center">
-    <tr>
-      <td>{{ blogpost.title(class="form-control",placeholder="Title") }}</td>
-    </tr>
-    <tr>
-      <td>{{ blogpost.description(class="form-control",rows="3",placeholder="Description") }}</td>
-    </tr>
-    <tr>
-      <td align="center"><input class="submitbt" type="submit" value="Post" /></td>
-    </tr>
-  </table>
+  <form method="POST">
+    {{ blogpost.hidden_tag() }}  <!-- 🔹 CSRF token obligatorio -->
+    <table align="center">
+      <tr>
+        <td>{{ blogpost.title(class="form-control", placeholder="Title") }}</td>
+      </tr>
+      <tr>
+        <td>{{ blogpost.description(class="form-control", rows="3", placeholder="Description") }}</td>
+      </tr>
+      <tr>
+         <td align="center"><input class="submitbt" type="submit" value="Post" /></td>
+      </tr>
+    </table>
   </form>
 </div>
 

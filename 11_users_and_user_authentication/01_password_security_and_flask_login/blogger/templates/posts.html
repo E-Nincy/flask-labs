@@ -14,72 +14,73 @@
 
     <link rel="stylesheet" type="text/css" href="../static/css/styles.css">
     <style type="text/css">
-      #us{
+      #us {
         float: right;
         margin-right: 20px;
         margin-top: 10px;
       }
-      #us h3{
-        margin: 0 0 0 0;
+      #us h3 {
+        margin: 0;
       }
-      .ps{
+      .ps {
         width: 60%;
         margin-top: 20px;
-        margin-left: 20%
+        margin-left: 20%;
       }
-      #icon{
+      #icon {
         float: right;
         margin-top: -15px;
       }
-      #signout{
+      #signout {
         width: 100px;
         height: 20px;
       }
-      #signout a{
+      #signout a {
         padding: 2px 0px 2px 20px;
       }
     </style>
   </head>
 <body>
 <div id="us">
-<ul class="nav nav-pills">
-  <li><h3> {{session['current_user']}} &nbsp</h3></li>
-  <li role="presentation" class="active" id="signout"><a href="/logout">Sign Out</a></li>
- </ul>
+  <ul class="nav nav-pills">
+    <li><h3>{{ current_user.username }} &nbsp;</h3></li>
+    <li role="presentation" class="active" id="signout"><a href="/logout">Sign Out</a></li>
+  </ul>
 </div>
+
 <div>
-<ul class="nav nav-tabs">
-  <li role="presentation" class="active"><a href="">Posts</a></li>
-  <li role="presentation"><a href="/add">Add Posts</a></li>
-  <li role="presentation"><a href="/about_user">About</a></li>
-</ul>
+  <ul class="nav nav-tabs">
+    <li role="presentation" class="active"><a href="/posts">Posts</a></li>
+    <li role="presentation"><a href="/add">Add Posts</a></li>
+    <li role="presentation"><a href="/about_user/{{ current_user.uid }}">About</a></li>
+  </ul>
 </div>
-{% with messages = get_flashed_messages() %}
+
+{% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-    {% for message in messages %}
+    {% for category, message in messages %}
       <h3 class="flashes" align="center" style="color:#337ab7">{{ message }}</h3>
     {% endfor %}
   {% endif %}
 {% endwith %}
-<div class="ps">
-{% for i in posts %}
-<div class="panel panel-info">
-  <div class="panel-heading">
-    <div><h3 class="panel-title">{{i.title}}</h3></div>
-    <div id="icon">
-    {% for j in user %}
-      {% if j.uid == i.puid %}
-     BY: {{j.username}}
-      <a class="glyphicon glyphicon-pencil" href="/update/{{ i.pid }}/{{j.username}}"></a>&nbsp &nbsp
-      <a class="glyphicon glyphicon-trash" id="del" href="/delete/{{ i.pid }}/{{j.username}}"></a>
 
+<div class="ps">
+  {% for post in posts %}
+  <div class="panel panel-info">
+    <div class="panel-heading">
+      <div><h3 class="panel-title">{{ post.title }}</h3></div>
+      <div id="icon">
+        BY: {{ post.author.username }}
+        {% if post.author_id == current_user.uid %}
+          <a class="glyphicon glyphicon-pencil" href="/update/{{ post.pid }}">Edit</a>&nbsp;&nbsp;
+          <a class="glyphicon glyphicon-trash" id="del" href="/delete/{{ post.pid }}">Delete</a>
+        {% endif %}
+      </div>
     </div>
+    <div class="panel-body"><p>{{ post.description }}</p></div>
   </div>
-  <div class="panel-body"><p>{{i.description}}</p> </div>
+  {% endfor %}
 </div>
-{% endif %}
-{% endfor %}
-{% endfor %}
-</div>
+
 </body>
 </html>

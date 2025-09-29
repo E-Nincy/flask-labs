@@ -1,5 +1,5 @@
 from flask import Flask, request, session, redirect, url_for, render_template, flash, jsonify
-
+from flask_login import login_user, logout_user, login_required, current_user
 from . models import User, Post, db
 from . forms import AddPostForm, SignUpForm, SignInForm, AboutUserForm
 
@@ -12,67 +12,77 @@ def index():
 
 
 @app.route('/posts')
+@login_required
 def show_posts():
-    if session['user_available']:
-        posts = Post.query.all()
-        user = User.query.all()
-        return render_template('posts.html', posts=posts, user=user)
-    flash('User is not Authenticated')
-    return redirect(url_for('index'))
-
+    posts = Post.query.all()
+    return render_template('posts.html', posts=posts, user=current_user)
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required
 def add_post():
-    if session['user_available']:
-        blogpost = AddPostForm(request.form)
-        us = User.query.filter_by(username=session['current_user']).first()
-        if request.method == 'POST':
-            bp = Post(blogpost.title.data, blogpost.description.data, us.uid)
-            db.session.add(bp)
-            db.session.commit()
-            return redirect(url_for('show_posts'))
-        return render_template('add.html', blogpost=blogpost)
-    flash('User is not Authenticated')
-    return redirect(url_for('index'))
-
-
-@app.route('/delete/<pid>/<post_owner>', methods=('GET', 'POST'))
-def delete_post(pid, post_owner):
-    if session['current_user'] == post_owner:
-        me = Post.query.get(pid)
-        db.session.delete(me)
+    form = AddPostForm()
+    if form.validate_on_submit():
+        bp = Post(
+            title=form.title.data,
+            description=form.description.data,
+            puid=current_user.uid
+        )
+        db.session.add(bp)
         db.session.commit()
+        flash('Post added successfully!', 'success')
         return redirect(url_for('show_posts'))
-    flash('You are not a valid user to Delete this Post')
+    else:
+        print(form.errors) 
+    return render_template('add.html', blogpost=form)
+
+
+@app.route('/delete/<int:post_id>', methods=['POST'])
+@login_required
+def delete_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author_id != current_user.uid:
+        flash("You can't delete someone else's post!")
+        return redirect(url_for('show_posts'))
+    db.session.delete(post)
+    db.session.commit()
+    flash('Post deleted successfully.')
     return redirect(url_for('show_posts'))
 
 
-@app.route('/update/<pid>/<post_owner>', methods=('GET', 'POST'))
-def update_post(pid, post_owner):
-    if session['current_user'] == post_owner:
-        me = Post.query.get(pid)
-        blogpost = AddPostForm(obj=me)
-        if request.method == 'POST':
-            bpost = Post.query.get(pid)
-            bpost.title = blogpost.title.data
-            bpost.description = blogpost.description.data
-            db.session.commit()
-            return redirect(url_for('show_posts'))
-        return render_template('update.html', blogpost=blogpost)
-    flash('You are not a valid user to Edit this Post')
-    return redirect(url_for('show_posts'))
+@app.route('/update/<int:post_id>', methods=['GET', 'POST'])
+@login_required
+def update_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    if post.author_id != current_user.uid:
+        flash("You can't edit someone else's post!")
+        return redirect(url_for('show_posts'))
+
+    form = AddPostForm(obj=post)
+    if form.validate_on_submit():
+        post.title = form.title.data
+        post.description = form.description.data
+        db.session.commit()
+        flash('Post updated successfully.')
+        return redirect(url_for('show_posts'))
+
+    return render_template('update.html', blogpost=form, post=post)
 
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
     signupform = SignUpForm(request.form)
     if request.method == 'POST':
-        reg = User(signupform.firstname.data, signupform.lastname.data,\
-         signupform.username.data, signupform.password.data,\
-         signupform.email.data)
+        reg = User(
+            signupform.firstname.data,
+            signupform.lastname.data,
+            signupform.username.data,
+            signupform.password.data,
+            signupform.email.data
+        )
         db.session.add(reg)
         db.session.commit()
-        return redirect(url_for('index'))
+        flash("Registration successful. Please log in.", "success")
+        return redirect(url_for('signin'))
     return render_template('signup.html', signupform=signupform)
 
 
@@ -82,28 +92,26 @@ def signin():
     if request.method == 'POST':
         em = signinform.email.data
         log = User.query.filter_by(email=em).first()
-        if log.password == signinform.password.data:
-            current_user = log.username
-            session['current_user'] = current_user
-            session['user_available'] = True
+        if log and log.verify_password(signinform.password.data):
+            login_user(log)
+            flash("Logged in successfully", "success")
             return redirect(url_for('show_posts'))
+        else:
+            flash("Invalid username or password", "danger")
     return render_template('signin.html', signinform=signinform)
 
 
-@app.route('/about_user')
-def about_user():
-    aboutuserform = AboutUserForm()
-    if session['user_available']:
-        user = User.query.filter_by(username=session['current_user']).first()
-        return render_template('about_user.html', user=user, aboutuserform=aboutuserform)
-    flash('You are not a Authenticated User')
-    return redirect(url_for('index'))
-
+@app.route('/about_user/<int:user_id>')
+@login_required
+def about_user(user_id):
+    user = User.query.get_or_404(user_id)
+    return render_template('about_user.html', user=user)
 
 @app.route('/logout')
+@login_required
 def logout():
-    session.clear()
-    session['user_available'] = False
+    logout_user()
+    flash("You have been logged out.", "info")
     return redirect(url_for('index'))
 
 

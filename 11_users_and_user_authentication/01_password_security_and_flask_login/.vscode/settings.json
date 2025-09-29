@@ -1,0 +1,8 @@
+{
+    "python.defaultInterpreterPath": "/home/nincyescoto/CodingNomads/projects/flask-labs/11_users_and_user_authentication/01_password_security_and_flask_login/venv/bin/python",
+    "python.analysis.extraPaths": [
+        "venv/lib/python3.13/site-packages"
+    ],
+    "python.analysis.diagnosticMode": "workspace",
+    "python.terminal.activateEnvironment": true
+}
