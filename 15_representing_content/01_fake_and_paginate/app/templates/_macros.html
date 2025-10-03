@@ -1,0 +1,25 @@
+{% macro render_pagination(pagination, endpoint, kwargs=None, page_param='page', type=None) %}
+{% if pagination.pages > 1 %}
+<ul class="pagination {% if type %}{{ type }}{% endif %}">
+    {%- for page in pagination.iter_pages(left_edge=2, left_current=2, right_current=2, right_edge=2) %}
+    {% if page %}
+    {% set params = {} %}
+    {% if kwargs %}
+    {% for k, v in kwargs.items() %}
+    {% set _ = params.update({k: v}) %}
+    {% endfor %}
+    {% endif %}
+    {% set _ = params.update({page_param: page}) %}
+
+    {% if page != pagination.page %}
+    <li><a href="{{ url_for(endpoint, **params) }}">{{ page }}</a></li>
+    {% else %}
+    <li class="active"><span>{{ page }}</span></li>
+    {% endif %}
+    {% else %}
+    <li><span>…</span></li>
+    {% endif %}
+    {%- endfor %}
+</ul>
+{% endif %}
+{% endmacro %}
