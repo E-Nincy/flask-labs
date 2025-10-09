@@ -8,12 +8,34 @@ from flask_reddit.subreddits.models import Subreddit
 from flask_reddit.threads.models import Thread
 from flask_reddit.users.models import User
 from flask_reddit import db
+from flask_login import login_required, current_user
 
 mod = Blueprint('subreddits', __name__, url_prefix='/r')
 
 #######################
 ### Subreddit Views ###
 #######################
+
+mod = Blueprint('subreddits', __name__)
+
+@mod.route('/subscribe/<int:subreddit_id>', methods=['POST'])
+@login_required
+def subscribe(subreddit_id):
+    subreddit = Subreddit.query.get_or_404(subreddit_id)
+    if subreddit not in current_user.subscriptions:
+        current_user.subscriptions.append(subreddit)
+        db.session.commit()
+    return redirect(url_for('subreddits.all_subreddits'))
+
+@mod.route('/unsubscribe/<int:subreddit_id>', methods=['POST'])
+@login_required
+def unsubscribe(subreddit_id):
+    subreddit = Subreddit.query.get_or_404(subreddit_id)
+    if subreddit in current_user.subscriptions:
+        current_user.subscriptions.remove(subreddit)
+        db.session.commit()
+    return redirect(url_for('subreddits.all_subreddits'))
+
 
 @mod.before_request
 def before_request():

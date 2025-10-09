@@ -2,7 +2,7 @@
 All database abstractions for threads and comments
 go in this file.
 """
-from flask import url_for
+from flask import url_for, has_request_context
 from flask_reddit import db
 from flask_reddit.threads import constants as THREAD
 from flask_reddit import utils
@@ -11,8 +11,9 @@ from math import log
 import datetime
 
 thread_upvotes = db.Table('thread_upvotes',
-    db.Column('user_id', db.Integer, db.ForeignKey('users_user.id')),
-    db.Column('thread_id', db.Integer, db.ForeignKey('threads_thread.id'))
+    db.Column('user_id', db.Integer, db.ForeignKey('users_user.id'), primary_key=True),
+    db.Column('thread_id', db.Integer, db.ForeignKey('threads_thread.id'), primary_key=True),
+    db.Column('vote_type', db.String(10), nullable=False)
 )
 
 comment_upvotes = db.Table('comment_upvotes',
@@ -138,47 +139,27 @@ class Thread(db.Model):
         """
         did the user vote already
         """
-        select_votes = thread_upvotes.select(
+        select_votes = thread_upvotes.select().where(
                 db.and_(
                     thread_upvotes.c.user_id == user_id,
                     thread_upvotes.c.thread_id == self.id
                 )
         )
-        rs = db.engine.execute(select_votes)
+        rs = db.session.execute(select_votes)
         return False if rs.rowcount == 0 else True
 
     def vote(self, user_id):
-        """
-        allow a user to vote on a thread. if we have voted already
-        (and they are clicking again), this means that they are trying
-        to unvote the thread, return status of the vote for that user
-        """
-        already_voted = self.has_voted(user_id)
-        vote_status = None
-        if not already_voted:
-            # vote up the thread (insert a new row into association table)
-            db.engine.execute(
-                thread_upvotes.insert(),
-                user_id   = user_id,
-                thread_id = self.id
-            )
-            self.votes = self.votes + 1
-            vote_status = True
-        else:
-            # unvote the thread
-            db.engine.execute(
-                # delete the row that contains the passed-in user ID and
-                # this thread ID
-                thread_upvotes.delete(
-                    db.and_(
-                        thread_upvotes.c.user_id == user_id,
-                        thread_upvotes.c.thread_id == self.id
-                    )
-                )
-            )
-            self.votes = self.votes - 1
+        user = User.query.get(user_id)
+        if user in self.voters:
+            user.upvoted_threads.remove(self)
+            self.votes -= 1
             vote_status = False
-        db.session.commit() # for the vote count
+        else:
+            # agregar voto
+            user.upvoted_threads.append(self)
+            self.votes += 1
+            vote_status = True
+        db.session.commit()
         return vote_status
 
     def extract_thumbnail(self):
@@ -189,12 +170,19 @@ class Thread(db.Model):
         this repo is just a simple example of a reddit-like crud application!
         """
         DEFAULT_THUMBNAIL = url_for('static', filename='imgs/reddit-camera.png')
+        if has_request_context():
+            DEFAULT_THUMBNAIL = url_for('static', filename='imgs/reddit-camera.png')
+        else:
+            DEFAULT_THUMBNAIL = '/static/imgs/reddit-camera.png'
+
+        thumbnail = None
         if self.link:
             thumbnail = media.get_top_img(self.link)
+
         if not thumbnail:
             thumbnail = DEFAULT_THUMBNAIL
+
         self.thumbnail = thumbnail
-        db.session.commit()
 
 
 class Comment(db.Model):

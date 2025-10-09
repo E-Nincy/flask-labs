@@ -55,6 +55,9 @@ def custom_render(template, *args, **kwargs):
     """
     return render_template(template, *args, **kwargs)
 
+from flask_migrate import Migrate
+migrate = Migrate(app, db)
+
 app.debug = app.config['DEBUG']
 
 if __name__ == '__main__':

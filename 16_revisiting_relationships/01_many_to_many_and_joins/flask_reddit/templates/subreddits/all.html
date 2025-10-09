@@ -2,10 +2,27 @@
 
 {% block left %}
   <div class="col-lg-10 thread-submit-box">
-  <h4 class="all-subreddits-label">List of all subreddits.</h4>
-  {% for subreddit in subreddits %}
-        <li><a href="/r/{{ subreddit.name}}/">{{ subreddit.name }}</a></li>
-  {% endfor %}
+    <h4 class="all-subreddits-label">List of all subreddits.</h4>
+    <ul>
+    {% for subreddit in subreddits %}
+      <li>
+        <a href="/r/{{ subreddit.name }}/">{{ subreddit.name }}</a>
+        
+        {% if user and subreddit in user.subscriptions %}
+            {% if subreddit in user.subscriptions %}
+                <form method="POST" action="{{ url_for('subreddits.unsubscribe', subreddit_id=subreddit.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-outline-danger">Unsubscribe</button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ url_for('subreddits.subscribe', subreddit_id=subreddit.id) }}" style="display:inline;">
+                    <button type="submit" class="btn btn-sm btn-outline-primary">Subscribe</button>
+                </form>
+            {% endif %}
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
   </div>
 {% endblock %}
+
 

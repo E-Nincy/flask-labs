@@ -20,9 +20,14 @@ def before_request():
 def home_page(username=None):
     if not username:
         abort(404)
-    user = User.query.filter_by(username=username).first()
-    if not user:
+    profile_user = User.query.filter_by(username=username).first()
+    if not profile_user:
         abort(404)
-    return render_template('users/profile.html', user=g.user, current_user=user,
-            subreddits = get_subreddits())
+    return render_template(
+        'users/profile.html',
+        current_user=g.user,        # usuario logueado
+        profile_user=profile_user,  # usuario cuyo perfil estamos viendo
+        subreddits=get_subreddits()
+    )
+
 

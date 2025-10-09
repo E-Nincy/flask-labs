@@ -50,17 +50,17 @@
               </li>
           </ul>
           <ul class="nav navbar-nav navbar-right">
-          {% if user is not defined or user == None %}
+          {% if g.user is not defined or g.user == None %}
               <li><a href="{{ url_for('frontends.register', next=request.path) }}">Register</a></li>
               <li><a href="{{ url_for('frontends.login', next=request.path) }}">Login</a></li>
           {% else %}
               <p class="navbar-text login-nav-text">logged in as
-                  <a href="{{ url_for('users.home_page', username=user.username) }}">
-                      {{ user.username }}</a>, &nbsp;
-                  {{ user.get_thread_karma() }} <span class="karma-star">★</span>
+                  <a href="{{ url_for('users.home_page', username=g.user.username) }}">{{ g.user.username }}</a>, &nbsp;
+                  {{ g.user.get_thread_karma() }} <span class="karma-star">★</span>
+                  <a href="{{ url_for('frontends.subscribed') }}">Subscribed</a>
               </p>
-              <li class="logout-button"><a href="{{ config.ROOT_URL }}/logout">logout</a></li>
-          {% endif %}
+              <li class="logout-button"><a href="{{ url_for('frontends.logout') }}">logout</a></li>
+           {% endif %}
           </ul>
         </div><!-- /.navbar-collapse -->
       </div><!-- /.container -->

@@ -44,8 +44,7 @@ def process_thread_paginator(trending=False, rs=None, subreddit=None):
     # if we are passing in a resultset, that means we are just looking to
     # quickly paginate some arbitrary data, no sorting
     if rs:
-        thread_paginator = rs.paginate(cur_page, per_page=threads_per_page,
-            error_out=True)
+        thread_paginator = rs.paginate(page=cur_page, per_page=threads_per_page, error_out=True)
         return thread_paginator
 
     # sexy line of code :)
@@ -53,11 +52,11 @@ def process_thread_paginator(trending=False, rs=None, subreddit=None):
 
     if trending:
         thread_paginator = base_query.order_by(db.desc(Thread.votes)).\
-        paginate(cur_page, per_page=threads_per_page, error_out=True)
+            paginate(page=cur_page, per_page=threads_per_page, error_out=True)
     else:
         thread_paginator = base_query.order_by(db.desc(Thread.hotness)).\
-                paginate(cur_page, per_page=threads_per_page, error_out=True)
-    return thread_paginator
+            paginate(page=cur_page, per_page=threads_per_page, error_out=True)
+        return thread_paginator
 
 #@mod.route('/<regex("trending"):trending>/')
 @mod.route('/')
@@ -155,4 +154,38 @@ def register():
         return redirect(url_for('frontends.home'))
 
     return render_template("register.html", form=form, next=next)
+
+@mod.route('/r/<string:name>/')
+def view_subreddit(name):
+    subreddit = Subreddit.query.filter_by(name=name).first_or_404()
+    subreddits = get_subreddits()
+    thread_paginator = process_thread_paginator(subreddit=subreddit)
+    return render_template('home.html', user=g.user,
+                           subreddits=subreddits,
+                           cur_subreddit=subreddit,
+                           thread_paginator=thread_paginator)
+
+
+from flask_reddit.users.models import user_subscriptions
+
+@mod.route('/subscribed/')
+@requires_login
+def subscribed():
+    threads = Thread.query.join(Subreddit)\
+                .join(user_subscriptions, user_subscriptions.c.subreddit_id == Subreddit.id)\
+                .filter(user_subscriptions.c.user_id == g.user.id)\
+                .order_by(Thread.votes.desc())
+    
+    thread_paginator = threads.paginate(
+        page=int(request.args.get('page', 1)), 
+        per_page=15
+    )
+
+    return render_template(
+        'home.html', 
+        user=g.user,
+        subreddits=get_subreddits(),
+        thread_paginator=thread_paginator,
+        cur_subreddit=None
+    )
 
