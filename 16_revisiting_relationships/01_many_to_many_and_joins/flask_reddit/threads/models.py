@@ -9,6 +9,8 @@ from flask_reddit import utils
 from flask_reddit import media
 from math import log
 import datetime
+from flask_reddit.users.models import User
+
 
 thread_upvotes = db.Table('thread_upvotes',
     db.Column('user_id', db.Integer, db.ForeignKey('users_user.id'), primary_key=True),
