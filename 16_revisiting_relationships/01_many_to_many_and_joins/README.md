@@ -79,3 +79,5 @@ You could fix this without any changes to the models, but you can also use a man
 ### 2. Subscriptions and Joins
 
 Allow users to subscribe to a subreddit, then make a "subscribed" tab that only shows posts from the subreddits they subscribe to. Subscribing to a subreddit means that a user can see their own "custom" frontpage of subreddits that interest them. Sort by vote count.
+
+# Small change to update GitHub contributions
